@@ -173,9 +173,19 @@ Now playing with and plotting predicted probabilities based on the model
 
 ```{r}
 
-blackfem_genY <- with(anes_genY,
-  data.frame(female = 1, race = "Black", vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
-blackfem_genY$prob <- predict(M_genY, newdata = blackfem_genY, type = "response", se = TRUE)
+#creating a data frame of fitted values 
+
+blackfem_genY <- with(anes_genY, data.frame(female = 1, race = "Black", vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+
+#predict probability point estimates for each fitted value.
+
+blackfem_genY$predicted_prob <- predict(M_genY, newdata = blackfem_genY, type = "response", se = TRUE)
+
+#the way the code is laid out in the manuel - perhaps we can try this..? I just don't understand most of it 
+ predict(object,newdata=NULL,total=NULL,
+                             type=c("link","response","terms"),
+                             se.fit=(type != "terms"),vcov=FALSE,...)
+
 #so this would be a prediction based on a black, employed Millennial female at
 #various levels of education
 
