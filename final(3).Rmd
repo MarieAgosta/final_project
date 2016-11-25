@@ -1,0 +1,233 @@
+---
+title: "Final Presentation"
+author: "Chris Kardish and Marie Agosta"
+date: "November 18, 2016"
+output: pdf_document
+---
+
+This is where we clean and prepare the data
+
+```{r}
+
+#rm(list = ls()) this command clears your environment
+#setwd('C:/Users/Chris/Documents/GitHub/pair3')
+#setwd('C:/Users/Chris/Documents/R/col_soc_science')
+
+library(foreign) 
+library(survey)
+
+# R will crash if a primary sampling unit (psu) has a single observation
+# set R to produce conservative standard errors instead of crashing
+options( survey.lonely.psu = "adjust" )
+
+#import data 
+anes <- read.dta("anes_timeseries_2012_Stata12.dta")
+
+#table(anes$dem_age_r_x) #age
+anes <- anes[!(anes$dem_age_r_x <= -2 | anes$dem_age_r_x >= 88),] 
+#deletes outliers
+
+#table(anes$postvote_rvote)
+levels(anes$postvote_rvote) <- c("Refused", "Don't know", "Incomplete", "Nonresponsive", "Missing", "Inapplicable", "No", "No", "No", "Yes")
+anes <- anes[(anes$postvote_rvote == "Yes" | anes$postvote_rvote == "No"),] 
+anes$postvote_rvote <-  droplevels(anes$postvote_rvote)
+anes$postvote_rvote <- as.numeric(anes$postvote_rvote) 
+anes$postvote_rvote[anes$postvote_rvote == 1] <- 0
+anes$postvote_rvote[anes$postvote_rvote == 2] <- 1
+#keeps only Yes/no, changes the variable to a numeric dummy, with 1 as "Yes"
+
+#table(anes$dem_edugroup_x) #education
+levels(anes$dem_edugroup_x) <- c("Refused", "Don't know", "Data missing", "Below high school", "High school", "Some post-high", "Bachelor", "Graduate") 
+anes <- anes[(anes$dem_edugroup_x == "Below high school" | 
+                anes$dem_edugroup_x == "High school" | 
+                anes$dem_edugroup_x == "Some post-high" | 
+                anes$dem_edugroup_x == "Bachelor" |
+                anes$dem_edugroup_x == "Graduate"),] #keeps only these groups
+anes$dem_edugroup_x <-  droplevels(anes$dem_edugroup_x)
+anes$dem_edugroup_x <- as.numeric(anes$dem_edugroup_x)
+anes$dem_edugroup_x <- as.factor(anes$dem_edugroup_x) #gives us 1 to 5, with graduate education
+#being the highest
+
+#table(anes$dem_raceeth_x) #race
+levels(anes$dem_raceeth_x) <- c("Data missing", "White", "Black", "Asian" , "Hawaiian or Pacif Islr", "Native American or Alaska Native", "Hispanic","Other") 
+anes <- anes[!(anes$dem_raceeth_x == "Data missing"),] 
+anes$dem_raceeth_x <-  droplevels(anes$dem_raceeth_x)
+
+#table(anes$interest_voted2008) #voting in past election (2008)
+levels(anes$interest_voted2008) <- c("Refused", "Don't know", "Yes", "No")
+anes <- anes[(anes$interest_voted2008 == "Yes" | anes$interest_voted2008 == "No"),] 
+anes$interest_voted2008 <-  droplevels(anes$interest_voted2008)
+anes$interest_voted2008 <- as.numeric(anes$interest_voted2008) 
+anes$interest_voted2008[anes$interest_voted2008 == 2] <- 0
+#turns it into a numeric dummy variable, with 1 meaning "Yes, I voted in 2008."
+
+#table(anes$gender_respondent_x) #gender
+anes$female <- anes$gender_respondent_x == "2. Female" #creates dummy gender #variable
+anes$female <- as.numeric(anes$female) 
+#creates numeric dummy variable, with 1 as "female"
+
+#table(anes$dem_emptype_unemp) #employment status
+levels(anes$dem_emptype_unemp) <- c("No", "Yes")
+anes$unemployed <- anes$dem_emptype_unemp == "Yes"
+anes$unemployed <- as.numeric(anes$unemployed)
+
+#combining needed variables in smaller data set 
+anes_small <- data.frame(anes$caseid, anes$dem_age_r_x, anes$dem_edugroup_x, anes$dem_raceeth_x, anes$unemployed, anes$female, anes$interest_voted2008, anes$postvote_rvote, anes$weight_full, anes$psu_full, anes$strata_full)
+
+#		"caseid" ,				      unique record identifiers
+		
+#		"weight.full" , 		    full-sample weights
+		
+#		"strata.full" ,			    full-sample strata variable
+
+#		"psu.full" ,			      full-sample cluster variable
+		
+#		"dem_age_r_x" ,         respondent age group
+		
+# 	"female" ,	            respondent sex
+		
+#		"dem_edugroup_x" ,		  how many hours do you work the average week
+		
+#		"dem_raceeth_x"				  do you support or oppose the tea party   
+
+#   "unemployed"            respondent employment status 
+
+#  interest_voted2008       repsondents previous voting history
+
+#    postvote_rvote          
+
+colnames(anes_small) <- c("caseID", "age", "education", "race", "unemployed", "female", "vote_2008", "vote_2012", "weights", "psu", "strata" )
+
+#set up an object that allows for proper id and weights to be used in the data set
+
+ 
+#other variable ideas to include, all of which have a lot of observations  
+  #table(anes$respons_elections) #efficacy of elections
+  #table(anes$preswin_dutychoice_x) #voting a duty 
+  #table(anes$pid_x) #strength of party ID
+  #table(anes$trust_social) #social trust
+  #table(anes$inc_incgroup_pre) #income groups
+  #http://stackoverflow.com/questions/9604001/grouping-2-levels-of-a-factor-in-r
+  #table(anes$postvote_presstr) #strength of voting preference 
+
+```
+
+Creating the age-band subsets from the smaller ANES data set that contains only 
+variables of interest.
+
+```{r}
+
+anes_genY <- subset(anes_small, anes$dem_age_r_x > 17 & anes$dem_age_r_x < 33) 
+#creates Millennial subset 
+anes_genX <- subset(anes_small, anes$dem_age_r_x > 32 & anes$dem_age_r_x < 48) 
+#creates Generation X subset 
+anes_boomer <- subset(anes_small, anes$dem_age_r_x > 47 & anes$dem_age_r_x < 67) 
+#creates Baby Boomer subset 
+anes_silent <- subset(anes_small, anes$dem_age_r_x > 66 & anes$dem_age_r_x < 88) 
+#creates Silent Generation subset
+
+ANESdesign_genY <- svydesign(~psu ,  strata = ~strata , data = anes_genY , weights = ~weights, variables = NULL, nest = TRUE)
+
+ANESdesign_genX <- svydesign(~psu ,  strata = ~strata , data = anes_genX , weights = ~weights, variables = NULL, nest = TRUE)
+
+ANESdesign_boomer <- svydesign(~psu ,  strata = ~strata , data = anes_boomer, weights = ~weights, variables = NULL, nest = TRUE)
+
+ANESdesign_silent <- svydesign(~psu ,  strata = ~strata , data = anes_silent, weights = ~weights, variables = NULL, nest = TRUE)
+```
+
+Running logistic regression model with confidence intervals
+
+```{r}
+
+#Millennials
+M_genY <- svyglm(vote_2012 ~ education + unemployed + female + vote_2008 + race, design = ANESdesign_genY, family = "quasibinomial") 
+summary(M_genY)
+genY_coef <- coef(M_genY)
+exp(genY_coef)
+
+#Baby Boomers
+M_boomer <- svyglm(vote_2012 ~ education + unemployed + female + vote_2008 + race, design = ANESdesign_boomer, family = "quasibinomial") 
+summary(M_boomer)
+boomer_coef <- coef(M_boomer)
+exp(boomer_coef)
+
+#Gen X
+M_genX <- svyglm(vote_2012 ~ education + unemployed + female + vote_2008 + race, design = ANESdesign_genX, family = "quasibinomial") 
+summary(M_genX)
+genX_coef <- coef(M_genX)
+exp(genX_coef)
+
+
+# Looking at confidence intervals of parameter point estimates 
+
+confint(M_genY)
+confint(M_boomer)
+confint(M_genX)
+
+#Giving odds ratios with confidence intervals in a table 
+exp(cbind(OR = coef(M_genY), confint(M_genY)))
+```
+
+Now playing with and plotting predicted probabilities based on the model
+
+```{r}
+
+blackfem_genY <- with(anes_genY,
+  data.frame(female = 1, race = "Black", vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+blackfem_genY$prob <- predict(M_genY, newdata = blackfem_genY, type = "response", se = TRUE)
+#so this would be a prediction based on a black, employed Millennial female at
+#various levels of education
+
+blackfem_boomer <- with(anes_boomer,
+  data.frame(female = 1, race = "Black", vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+blackfem_boomer$prob <- predict(M_boomer, newdata = blackfem_boomer, type = "response")
+#so this would be a prediction based on a black, employed Boomer female at
+#various levels of education. One thing to notice is that a black female Baby Boomer
+#is far less likely to vote at lower levels of education than a Millennial black female,
+#based on this model. 
+
+#Running a visual diagnositic 
+
+plot(blackfem_genY, which = 1)
+
+#Now to plot this with confidence intervals.
+#First, add the confidence intervals
+
+blackfem_genY <- cbind(blackfem_genY, predict(M_genY, newdata = blackfem_genY, type="link", se=TRUE))
+blackfem_genY <- within(blackfem_genY, {
+  prob <- plogis(fit)
+  LL <- plogis(fit - (1.96 * se.fit))
+  UL <- plogis(fit + (1.96 * se.fit))
+})
+
+library(ggplot2)
+ggplot(blackfem_genY, aes(x = education, y = prob, group = 1)) +
+  geom_ribbon(aes(ymin = LL, ymax = UL), alpha = .2) +
+  geom_line(aes(colour = education), size=1)
+#this plot doesn't look great at the moment, but it does work. 
+```
+
+Assessing the model fit. I draw on the UCLA page here for this: 
+http://www.ats.ucla.edu/stat/r/dae/logit.htm 
+
+In short: the results below are good, but I don't really know how to explain them.
+
+```{r}
+
+with(M_genY, null.deviance - deviance) #gives chi-square value
+with(M_genY, df.null - df.residual) #gives degrees of freed
+with(M_genY, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) 
+#last command gives p-value, which is very small and tells us "our model as a whole fits #significantly better than an empty model," according to the UCLA page that Christopher
+#used for some of the demonstration in class. But I have no idea what that actually means.
+````
+
+
+Notes from class Nov. 18
+
+Should have correlation matrix like on slide 22 of the Nov. 18 class
+
+Run the simulated stuff he did for presentation purposes. Need a regression table
+and other stuff, but for highlighting the main effects that's simply not
+a good idea. Simluation helps show the results and how confident we are
+about those results. Gives an expectation of what we would see in the "real world"
+based on the assumptions of our model. 
