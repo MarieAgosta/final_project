@@ -165,6 +165,7 @@ confint(M_boomer)
 confint(M_genX)
 
 #Giving odds ratios with confidence intervals in a table 
+
 exp(cbind(OR = coef(M_genY), confint(M_genY)))
 ```
 
@@ -196,10 +197,12 @@ blackfem_genY <- within(blackfem_genY, {
   UL <- plogis(fit + (1.96 * se.fit))
 })
 
+# want to have lines for the two generation we are comparing 
 library(ggplot2)
 ggplot(blackfem_genY, aes(x = education, y = prob, group = 1)) +
   geom_ribbon(aes(ymin = LL, ymax = UL), alpha = .2) +
   geom_line(aes(colour = education), size=1)
+
 #this plot doesn't look great at the moment, but it does work. 
 ```
 
