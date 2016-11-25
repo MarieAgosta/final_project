@@ -13,19 +13,23 @@ This is where we clean and prepare the data
 #setwd('C:/Users/Chris/Documents/GitHub/pair3')
 #setwd('C:/Users/Chris/Documents/R/col_soc_science')
 
+# calling appropriate packages 
+
 library(foreign) 
 library(survey)
 
 # R will crash if a primary sampling unit (psu) has a single observation
-# set R to produce conservative standard errors instead of crashing
+# so we set R to produce conservative standard errors instead of crashing
 options( survey.lonely.psu = "adjust" )
 
-#import data 
+#import data from the ANES
 anes <- read.dta("anes_timeseries_2012_Stata12.dta")
 
+# to delete ages that do not fit into any of our generations, we delete the unnecesary ages
 #table(anes$dem_age_r_x) #age
 anes <- anes[!(anes$dem_age_r_x <= -2 | anes$dem_age_r_x >= 88),] 
-#deletes outliers
+
+#We renamed the levels pertaining to if someone voted and then we coded them to be binary, keeping only Yes/no, changes the variable to a numeric dummy, with 1 as "Yes"
 
 #table(anes$postvote_rvote)
 levels(anes$postvote_rvote) <- c("Refused", "Don't know", "Incomplete", "Nonresponsive", "Missing", "Inapplicable", "No", "No", "No", "Yes")
@@ -34,8 +38,8 @@ anes$postvote_rvote <-  droplevels(anes$postvote_rvote)
 anes$postvote_rvote <- as.numeric(anes$postvote_rvote) 
 anes$postvote_rvote[anes$postvote_rvote == 1] <- 0
 anes$postvote_rvote[anes$postvote_rvote == 2] <- 1
-#keeps only Yes/no, changes the variable to a numeric dummy, with 1 as "Yes"
 
+#We renamed the levels pertaining to education, and then coded them as factors. It goes form 1-5 and 5 is the highest (graduate edu)
 #table(anes$dem_edugroup_x) #education
 levels(anes$dem_edugroup_x) <- c("Refused", "Don't know", "Data missing", "Below high school", "High school", "Some post-high", "Bachelor", "Graduate") 
 anes <- anes[(anes$dem_edugroup_x == "Below high school" | 
@@ -43,35 +47,44 @@ anes <- anes[(anes$dem_edugroup_x == "Below high school" |
                 anes$dem_edugroup_x == "Some post-high" | 
                 anes$dem_edugroup_x == "Bachelor" |
                 anes$dem_edugroup_x == "Graduate"),] #keeps only these groups
+
 anes$dem_edugroup_x <-  droplevels(anes$dem_edugroup_x)
 anes$dem_edugroup_x <- as.numeric(anes$dem_edugroup_x)
-anes$dem_edugroup_x <- as.factor(anes$dem_edugroup_x) #gives us 1 to 5, with graduate education
-#being the highest
+anes$dem_edugroup_x <- as.factor(anes$dem_edugroup_x) 
 
+#We renamed th elabels pertainin to race and removed all missing data 
 #table(anes$dem_raceeth_x) #race
 levels(anes$dem_raceeth_x) <- c("Data missing", "White", "Black", "Asian" , "Hawaiian or Pacif Islr", "Native American or Alaska Native", "Hispanic","Other") 
 anes <- anes[!(anes$dem_raceeth_x == "Data missing"),] 
 anes$dem_raceeth_x <-  droplevels(anes$dem_raceeth_x)
 
+
+#We renamed the labels pertaining to voting in the 2008 election, dropped NA ones, and recoded the remaining yes and no to be 1 or 0. 
 #table(anes$interest_voted2008) #voting in past election (2008)
 levels(anes$interest_voted2008) <- c("Refused", "Don't know", "Yes", "No")
 anes <- anes[(anes$interest_voted2008 == "Yes" | anes$interest_voted2008 == "No"),] 
 anes$interest_voted2008 <-  droplevels(anes$interest_voted2008)
 anes$interest_voted2008 <- as.numeric(anes$interest_voted2008) 
 anes$interest_voted2008[anes$interest_voted2008 == 2] <- 0
-#turns it into a numeric dummy variable, with 1 meaning "Yes, I voted in 2008."
+
+
+#We created a dummy variable for gender, with 1 as "female"
 
 #table(anes$gender_respondent_x) #gender
 anes$female <- anes$gender_respondent_x == "2. Female" #creates dummy gender #variable
 anes$female <- as.numeric(anes$female) 
-#creates numeric dummy variable, with 1 as "female"
 
+
+# We renamed the levels pertaining to employment status 
 #table(anes$dem_emptype_unemp) #employment status
 levels(anes$dem_emptype_unemp) <- c("No", "Yes")
 anes$unemployed <- anes$dem_emptype_unemp == "Yes"
 anes$unemployed <- as.numeric(anes$unemployed)
 
-#combining needed variables in smaller data set 
+
+#To save space, we created a smaller data set from our original data set, it includes all relevant variables, which are listed below the code. 
+#combining needed variables in smaller data set
+
 anes_small <- data.frame(anes$caseid, anes$dem_age_r_x, anes$dem_edugroup_x, anes$dem_raceeth_x, anes$unemployed, anes$female, anes$interest_voted2008, anes$postvote_rvote, anes$weight_full, anes$psu_full, anes$strata_full)
 
 #		"caseid" ,				      unique record identifiers
@@ -94,13 +107,15 @@ anes_small <- data.frame(anes$caseid, anes$dem_age_r_x, anes$dem_edugroup_x, ane
 
 #  interest_voted2008       repsondents previous voting history
 
-#    postvote_rvote          
+#    postvote_rvote         ???
 
+
+
+
+# We named the variables so they are very easy to undertand 
 colnames(anes_small) <- c("caseID", "age", "education", "race", "unemployed", "female", "vote_2008", "vote_2012", "weights", "psu", "strata" )
 
-#set up an object that allows for proper id and weights to be used in the data set
 
- 
 #other variable ideas to include, all of which have a lot of observations  
   #table(anes$respons_elections) #efficacy of elections
   #table(anes$preswin_dutychoice_x) #voting a duty 
@@ -126,6 +141,8 @@ anes_boomer <- subset(anes_small, anes$dem_age_r_x > 47 & anes$dem_age_r_x < 67)
 anes_silent <- subset(anes_small, anes$dem_age_r_x > 66 & anes$dem_age_r_x < 88) 
 #creates Silent Generation subset
 
+#set up an objects that allow for proper id and weights to be used in the data sets
+
 ANESdesign_genY <- svydesign(~psu ,  strata = ~strata , data = anes_genY , weights = ~weights, variables = NULL, nest = TRUE)
 
 ANESdesign_genX <- svydesign(~psu ,  strata = ~strata , data = anes_genX , weights = ~weights, variables = NULL, nest = TRUE)
@@ -138,6 +155,8 @@ ANESdesign_silent <- svydesign(~psu ,  strata = ~strata , data = anes_silent, we
 Running logistic regression model with confidence intervals
 
 ```{r}
+
+#Running a logit, generation by generation. Then looking at a summary of the results, follows by looking at and creating an object for the coeffs of the results. Then converting those results to probabilities by exp(ing) them 
 
 #Millennials
 M_genY <- svyglm(vote_2012 ~ education + unemployed + female + vote_2008 + race, design = ANESdesign_genY, family = "quasibinomial") 
