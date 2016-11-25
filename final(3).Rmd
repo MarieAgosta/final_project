@@ -186,10 +186,6 @@ blackfem_boomer$prob <- predict(M_boomer, newdata = blackfem_boomer, type = "res
 #is far less likely to vote at lower levels of education than a Millennial black female,
 #based on this model. 
 
-#Running a visual diagnositic 
-
-plot(blackfem_genY, which = 1)
-
 #Now to plot this with confidence intervals.
 #First, add the confidence intervals
 
