@@ -190,7 +190,7 @@ Now playing with and plotting predicted probabilities based on the model
 
 blackfem_genY <- with(anes_genY, data.frame(female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
 
-blackfem_genY <- with(anes_genY, data.frame(caseID = 9, weights = .506, psu = 1, strata = 6, female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+blackfem_genY <- with(anes_genY, data.frame(caseID = factor(1:5), weights = .506, psu = 1, strata = 6, female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
 
 #predict probability point estimates for each fitted value.
 
