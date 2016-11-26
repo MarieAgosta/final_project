@@ -10,7 +10,7 @@ This is where we clean and prepare the data
 ```{r}
 
 #rm(list = ls()) this command clears your environment
-#setwd('C:/Users/Chris/Documents/GitHub/pair3')
+#setwd('C:/Users/Chris/Documents/GitHub/final_project')
 #setwd('C:/Users/Chris/Documents/R/col_soc_science')
 
 # calling appropriate packages 
@@ -39,7 +39,7 @@ anes$postvote_rvote <- as.numeric(anes$postvote_rvote)
 anes$postvote_rvote[anes$postvote_rvote == 1] <- 0
 anes$postvote_rvote[anes$postvote_rvote == 2] <- 1
 
-#We renamed the levels pertaining to education, and then coded them as factors. It goes form 1-5 and 5 is the highest (graduate edu)
+#We renamed the levels pertaining to education, and then coded them as factors. It goes form 1-5 (1 being below high school) and 5 (graduate education)
 #table(anes$dem_edugroup_x) #education
 levels(anes$dem_edugroup_x) <- c("Refused", "Don't know", "Data missing", "Below high school", "High school", "Some post-high", "Bachelor", "Graduate") 
 anes <- anes[(anes$dem_edugroup_x == "Below high school" | 
@@ -47,17 +47,17 @@ anes <- anes[(anes$dem_edugroup_x == "Below high school" |
                 anes$dem_edugroup_x == "Some post-high" | 
                 anes$dem_edugroup_x == "Bachelor" |
                 anes$dem_edugroup_x == "Graduate"),] #keeps only these groups
-
 anes$dem_edugroup_x <-  droplevels(anes$dem_edugroup_x)
 anes$dem_edugroup_x <- as.numeric(anes$dem_edugroup_x)
-anes$dem_edugroup_x <- as.factor(anes$dem_edugroup_x) 
 
-#We renamed th elabels pertainin to race and removed all missing data 
+#We renamed the labels pertaining to race and removed all missing data 
 #table(anes$dem_raceeth_x) #race
 levels(anes$dem_raceeth_x) <- c("Data missing", "White", "Black", "Asian" , "Hawaiian or Pacif Islr", "Native American or Alaska Native", "Hispanic","Other") 
 anes <- anes[!(anes$dem_raceeth_x == "Data missing"),] 
 anes$dem_raceeth_x <-  droplevels(anes$dem_raceeth_x)
-
+anes$dem_raceeth_x <- as.numeric(anes$dem_raceeth_x)
+#white = 1, black = 2, asian = 3, hawaiin/pacific islander = 4, native american = 5
+#hispanic = 6
 
 #We renamed the labels pertaining to voting in the 2008 election, dropped NA ones, and recoded the remaining yes and no to be 1 or 0. 
 #table(anes$interest_voted2008) #voting in past election (2008)
@@ -67,23 +67,19 @@ anes$interest_voted2008 <-  droplevels(anes$interest_voted2008)
 anes$interest_voted2008 <- as.numeric(anes$interest_voted2008) 
 anes$interest_voted2008[anes$interest_voted2008 == 2] <- 0
 
-
 #We created a dummy variable for gender, with 1 as "female"
-
 #table(anes$gender_respondent_x) #gender
 anes$female <- anes$gender_respondent_x == "2. Female" #creates dummy gender #variable
 anes$female <- as.numeric(anes$female) 
 
-
-# We renamed the levels pertaining to employment status 
+#We renamed the levels pertaining to employment status 
 #table(anes$dem_emptype_unemp) #employment status
 levels(anes$dem_emptype_unemp) <- c("No", "Yes")
 anes$unemployed <- anes$dem_emptype_unemp == "Yes"
 anes$unemployed <- as.numeric(anes$unemployed)
 
-
-#To save space, we created a smaller data set from our original data set, it includes all relevant variables, which are listed below the code. 
-#combining needed variables in smaller data set
+#To simplify our task we create a smaller data set that includes all relevant variables
+#, which are listed below the code. 
 
 anes_small <- data.frame(anes$caseid, anes$dem_age_r_x, anes$dem_edugroup_x, anes$dem_raceeth_x, anes$unemployed, anes$female, anes$interest_voted2008, anes$postvote_rvote, anes$weight_full, anes$psu_full, anes$strata_full)
 
@@ -110,9 +106,7 @@ anes_small <- data.frame(anes$caseid, anes$dem_age_r_x, anes$dem_edugroup_x, ane
 #    postvote_rvote         ???
 
 
-
-
-# We named the variables so they are very easy to undertand 
+# We named the variables so they are very easy to understand 
 colnames(anes_small) <- c("caseID", "age", "education", "race", "unemployed", "female", "vote_2008", "vote_2012", "weights", "psu", "strata" )
 
 
@@ -194,11 +188,18 @@ Now playing with and plotting predicted probabilities based on the model
 
 #creating a data frame of fitted values 
 
-blackfem_genY <- with(anes_genY, data.frame(female = 1, race = "Black", vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+blackfem_genY <- with(anes_genY, data.frame(female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+
+blackfem_genY <- with(anes_genY, data.frame(caseID = 9, weights = .506, psu = 1, strata = 6, female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
 
 #predict probability point estimates for each fitted value.
 
 blackfem_genY$predicted_prob <- predict(M_genY, newdata = blackfem_genY, type = "response", se = TRUE)
+
+blackfem_genY$predicted_prob <- predict(M_genY, newdata = blackfem_genY, type = "response", 
+                                        se.fit=(type != "terms"), vcov=FALSE, 
+                                        design = ANESdesign_genY)
+
 
 #the way the code is laid out in the manuel - perhaps we can try this..? I just don't understand most of it 
  predict(object,newdata=NULL,total=NULL,
