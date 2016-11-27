@@ -30,7 +30,6 @@ anes <- read.dta("anes_timeseries_2012_Stata12.dta")
 anes <- anes[!(anes$dem_age_r_x <= -2 | anes$dem_age_r_x >= 88),] 
 
 #We renamed the levels pertaining to if someone voted and then we coded them to be binary, keeping only Yes/no, changes the variable to a numeric dummy, with 1 as "Yes"
-
 #table(anes$postvote_rvote)
 levels(anes$postvote_rvote) <- c("Refused", "Don't know", "Incomplete", "Nonresponsive", "Missing", "Inapplicable", "No", "No", "No", "Yes")
 anes <- anes[(anes$postvote_rvote == "Yes" | anes$postvote_rvote == "No"),] 
@@ -39,7 +38,8 @@ anes$postvote_rvote <- as.numeric(anes$postvote_rvote)
 anes$postvote_rvote[anes$postvote_rvote == 1] <- 0
 anes$postvote_rvote[anes$postvote_rvote == 2] <- 1
 
-#We renamed the levels pertaining to education, and then coded them as factors. It goes form 1-5 (1 being below high school) and 5 (graduate education)
+#We renamed the levels pertaining to education and recoded them as numeric ranging from 
+#1-5 (1 being below high school) and 5 (graduate education)
 #table(anes$dem_edugroup_x) #education
 levels(anes$dem_edugroup_x) <- c("Refused", "Don't know", "Data missing", "Below high school", "High school", "Some post-high", "Bachelor", "Graduate") 
 anes <- anes[(anes$dem_edugroup_x == "Below high school" | 
@@ -59,7 +59,7 @@ anes$dem_raceeth_x <- as.numeric(anes$dem_raceeth_x)
 #white = 1, black = 2, asian = 3, hawaiin/pacific islander = 4, native american = 5
 #hispanic = 6
 
-#We renamed the labels pertaining to voting in the 2008 election, dropped NA ones, and recoded the remaining yes and no to be 1 or 0. 
+#We renamed the labels pertaining to voting in the 2008 election, dropped NA ones, and recoded #the remaining yes and no to be 1 or 0. 
 #table(anes$interest_voted2008) #voting in past election (2008)
 levels(anes$interest_voted2008) <- c("Refused", "Don't know", "Yes", "No")
 anes <- anes[(anes$interest_voted2008 == "Yes" | anes$interest_voted2008 == "No"),] 
@@ -135,7 +135,8 @@ anes_boomer <- subset(anes_small, anes$dem_age_r_x > 47 & anes$dem_age_r_x < 67)
 anes_silent <- subset(anes_small, anes$dem_age_r_x > 66 & anes$dem_age_r_x < 88) 
 #creates Silent Generation subset
 
-#set up an objects that allow for proper id and weights to be used in the data sets
+#set up an objects to run with the logit models that allow for results to be 
+#statistically representative of the population through weighting 
 
 ANESdesign_genY <- svydesign(~psu ,  strata = ~strata , data = anes_genY , weights = ~weights, variables = NULL, nest = TRUE)
 
@@ -186,36 +187,19 @@ Now playing with and plotting predicted probabilities based on the model
 
 ```{r}
 
-#creating a data frame of fitted values 
+#creating a data frame of fitted values for a hypothetical black woman
 
 blackfem_genY <- with(anes_genY, data.frame(female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
 
+#this is an alternative we've played around with that includes the weighting columns
+#used by the survey package as well
 blackfem_genY <- with(anes_genY, data.frame(caseID = factor(1:5), weights = .506, psu = 1, strata = 6, female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
 
 #predict probability point estimates for each fitted value.
-
 blackfem_genY$predicted_prob <- predict(M_genY, newdata = blackfem_genY, type = "response", se = TRUE)
-
+#another alternative
 blackfem_genY$predicted_prob <- predict(M_genY, newdata = blackfem_genY, type = "response", 
-                                        se.fit=(type != "terms"), vcov=FALSE, 
                                         design = ANESdesign_genY)
-
-
-#the way the code is laid out in the manuel - perhaps we can try this..? I just don't understand most of it 
- predict(object,newdata=NULL,total=NULL,
-                             type=c("link","response","terms"),
-                             se.fit=(type != "terms"),vcov=FALSE,...)
-
-#so this would be a prediction based on a black, employed Millennial female at
-#various levels of education
-
-blackfem_boomer <- with(anes_boomer,
-  data.frame(female = 1, race = "Black", vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
-blackfem_boomer$prob <- predict(M_boomer, newdata = blackfem_boomer, type = "response")
-#so this would be a prediction based on a black, employed Boomer female at
-#various levels of education. One thing to notice is that a black female Baby Boomer
-#is far less likely to vote at lower levels of education than a Millennial black female,
-#based on this model. 
 
 #Now to plot this with confidence intervals.
 #First, add the confidence intervals
