@@ -174,7 +174,7 @@ genX_coef <- coef(M_genX)
 exp(genX_coef)
 
 
-# Looking at confidence intervals of parameter point estimates 
+#Looking at confidence intervals of parameter point estimates 
 
 confint(M_genY)
 confint(M_boomer)
@@ -189,7 +189,7 @@ Now playing with and plotting predicted probabilities based on the model
 
 ```{r}
 
-#manually collecting probabilities
+#Manually collecting probabilities
 
 ####Black Millennial Woman
 #1-probability for below-high-school educated black employed woman who didn't vote in 2008
@@ -216,17 +216,34 @@ prob_boomer_ed4 <- (exp(-0.87481 + 1.69306 + 0.22553 -0.76681))/(1+exp(-0.87481 
 #5-probability for graduate-educated black employed woman who didn't vote in 2008
 prob_boomer_ed5 <- (exp(-0.87481 + 1.54687 + 0.22553 -0.76681))/(1+exp(-0.87481 + 1.54687 + 0.22553 -0.76681)) 
 
+
+
+
+# Note assumes a model with 3 explanatory variables
+predicted_fit <- function(alpha, beta1, beta2, beta3, beta4, beta5, x1, x2, x3, x4, x5, se1, se2, se3, se4, se5)
+  {
+    fit <- alpha + beta1 * x1 + beta2 * x2 + beta3 * x3 + beta4 *x4 + beta5* x5
+    lb <- fit - (1.96 * se)
+    ub <- fit + (1.96 * se) 
+    predictions <- c(lb, fit, ub)
+
+    probs <- function(x) {(exp(x)) / (1 + exp(x) }
+    predictions <- probs(predictions)
+    return(predictions)
+}
+
+
+
+
 #creating a dataframe of predicted variables for plotting and other uses
 blackfem_genY_ed <- c(prob_genY_ed1, prob_genY_ed2, prob_genY_ed3, prob_genY_ed4, prob_genY_ed5)
 blackfem_boomer_ed <- c(prob_boomer_ed1, prob_boomer_ed2, prob_boomer_ed3, prob_boomer_ed4, prob_boomer_ed5)
 education <- cbind(blackfem_genY_ed, blackfem_boomer_ed)
-
-
-
+rownames(education) <- c("Below high school", "High school", "Some post-high", "Bachelor", "Graduate")
+colnames(education) <- c("Millennial probability", "Baby Boomer probability")
 
 #creating a data frame of fitted values for a hypothetical black woman
-
-blackfem_genY <- with(anes_genY, data.frame(female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
+blackfem_genY <- with(anes_genY, data.frame(female = 1, race = '2', vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
 
 #this is an alternative we've played around with that includes the weighting columns
 #used by the survey package as well
@@ -257,7 +274,6 @@ ggplot(blackfem_genY, aes(x = education, y = prob, group = 1)) +
   geom_ribbon(aes(ymin = LL, ymax = UL), alpha = .2) +
   geom_line(aes(colour = education), size=1)
 
-#this plot doesn't look great at the moment, but it does work. 
 ```
 
 Assessing the model fit. I draw on the UCLA page here for this: 
