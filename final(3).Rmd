@@ -49,7 +49,6 @@ anes <- anes[(anes$dem_edugroup_x == "Below high school" |
                 anes$dem_edugroup_x == "Graduate"),] #keeps only these groups
 anes$dem_edugroup_x <-  droplevels(anes$dem_edugroup_x)
 anes$dem_edugroup_x <- as.numeric(anes$dem_edugroup_x)
-anes$dem_edugroup_x <- as.factor(anes$dem_edugroup_x)
 
 #We renamed the labels pertaining to race and removed all missing data 
 #table(anes$dem_raceeth_x) #race
@@ -57,7 +56,7 @@ levels(anes$dem_raceeth_x) <- c("Data missing", "White", "Black", "Asian" , "Haw
 anes <- anes[!(anes$dem_raceeth_x == "Data missing"),] 
 anes$dem_raceeth_x <-  droplevels(anes$dem_raceeth_x)
 anes$dem_raceeth_x <- as.numeric(anes$dem_raceeth_x)
-anes$dem_raceeth_x <- as.factor(anes$dem_raceeth_x)
+
 #white = 1, black = 2, asian = 3, hawaiin/pacific islander = 4, native american = 5
 #hispanic = 6
 
@@ -221,18 +220,18 @@ prob_boomer_ed5 <- (exp(-0.87481 + 1.54687 + 0.22553 -0.76681))/(1+exp(-0.87481 
 
 # Note assumes a model with 3 explanatory variables
 predicted_fit <- function(alpha, beta1, beta2, beta3, beta4, beta5, x1, x2, x3, x4, x5, se1, se2, se3, se4, se5)
-  {
+{
     fit <- alpha + beta1 * x1 + beta2 * x2 + beta3 * x3 + beta4 *x4 + beta5* x5
     lb <- fit - (1.96 * se)
     ub <- fit + (1.96 * se) 
     predictions <- c(lb, fit, ub)
 
-    probs <- function(x) {(exp(x)) / (1 + exp(x) }
+    probs <- function(x) {(exp(x)) / (1 + exp(x)) }
     predictions <- probs(predictions)
-    return(predictions)
-}
+    return(predictions) 
+}  
 
-
+predicted_fit(-0.17336, 0.23787, -0.43932, 0.08985, 0.96896, -0.01822, 1, 0, 1, 0, 2, 0.11959, 0.37259, 0.21844, 0.22869, 0.06800)
 
 
 #creating a dataframe of predicted variables for plotting and other uses
