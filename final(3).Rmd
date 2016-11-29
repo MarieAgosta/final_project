@@ -216,7 +216,6 @@ prob_boomer_ed4 <- (exp(-0.87481 + 1.69306 + 0.22553 -0.76681))/(1+exp(-0.87481 
 prob_boomer_ed5 <- (exp(-0.87481 + 1.54687 + 0.22553 -0.76681))/(1+exp(-0.87481 + 1.54687 + 0.22553 -0.76681)) 
 
 
-
 predicted_fit <- function(alpha, beta1, beta2, beta3, beta4, beta5, 
     x1, x2, x3, x4, x5, 
     se1, se2, se3, se4, se5)
@@ -241,8 +240,7 @@ predictions <- probs(predictions)
 return(predictions) 
 }
 
-
-
+predicted_fit(-0.17336, 0.23787, -0.43932, 0.08985, 0.96896, -0.01822, 1, 0, 1, 0, 2, 0.11959, 0.37259, 0.21844, 0.22869, 0.06800)
 
 
 
