@@ -49,6 +49,7 @@ anes <- anes[(anes$dem_edugroup_x == "Below high school" |
                 anes$dem_edugroup_x == "Graduate"),] #keeps only these groups
 anes$dem_edugroup_x <-  droplevels(anes$dem_edugroup_x)
 anes$dem_edugroup_x <- as.numeric(anes$dem_edugroup_x)
+anes$dem_edugroup_x <- as.factor(anes$dem_edugroup_x)
 
 #We renamed the labels pertaining to race and removed all missing data 
 #table(anes$dem_raceeth_x) #race
@@ -56,6 +57,7 @@ levels(anes$dem_raceeth_x) <- c("Data missing", "White", "Black", "Asian" , "Haw
 anes <- anes[!(anes$dem_raceeth_x == "Data missing"),] 
 anes$dem_raceeth_x <-  droplevels(anes$dem_raceeth_x)
 anes$dem_raceeth_x <- as.numeric(anes$dem_raceeth_x)
+anes$dem_raceeth_x <- as.factor(anes$dem_raceeth_x)
 #white = 1, black = 2, asian = 3, hawaiin/pacific islander = 4, native american = 5
 #hispanic = 6
 
@@ -187,7 +189,20 @@ Now playing with and plotting predicted probabilities based on the model
 
 ```{r}
 
-library(prediction)
+#manually collecting probabilities
+
+#1-probability for high-school educated black employed woman who didn't vote in 2008
+prob_genY_ed2 <- (exp(-0.3448 + 0.5263 + 0.1249 + 0.6389))/(1+exp(-0.3448 + 0.5263 + 0.1249 + 0.6389)) 
+
+#2-probability for high-school educated black employed woman who didn't vote in 2008
+
+
+
+
+
+
+
+
 #creating a data frame of fitted values for a hypothetical black woman
 
 blackfem_genY <- with(anes_genY, data.frame(female = 1, race = 2, vote_2008 = 0, unemployed = 0, education = factor(1:5))) 
