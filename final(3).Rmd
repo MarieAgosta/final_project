@@ -191,14 +191,35 @@ Now playing with and plotting predicted probabilities based on the model
 
 #manually collecting probabilities
 
-#1-probability for high-school educated black employed woman who didn't vote in 2008
-prob_genY_ed2 <- (exp(-0.3448 + 0.5263 + 0.1249 + 0.6389))/(1+exp(-0.3448 + 0.5263 + 0.1249 + 0.6389)) 
-
+####Black Millennial Woman
+#1-probability for below-high-school educated black employed woman who didn't vote in 2008
+prob_genY_ed1 <- (exp(-0.3448 - 0.3448 + 0.1249 + 0.6389))/(1+exp(-0.3448 - 0.3448 + 0.1249 + 0.6389)) 
 #2-probability for high-school educated black employed woman who didn't vote in 2008
+prob_genY_ed2 <- (exp(-0.3448 + 0.5263 + 0.1249 + 0.6389))/(1+exp(-0.3448 + 0.5263 + 0.1249 + 0.6389)) 
+#3-probability for some post-high-school educated black employed woman who didn't vote in 2008
+prob_genY_ed3 <- (exp(-0.3448 + 0.7955 + 0.1249 + 0.6389))/(1+exp(-0.3448 + 0.7955 + 0.1249 + 0.6389)) 
+#4-probability for bachelor-educated black employed woman who didn't vote in 2008
+prob_genY_ed4 <- (exp(-0.3448 + 0.8990 + 0.1249 + 0.6389))/(1+exp(-0.3448 + 0.8990 + 0.1249 + 0.6389)) 
+#5-probability for graduate-educated black employed woman who didn't vote in 2008
+prob_genY_ed5 <- (exp(-0.3448 + 1.5099 + 0.1249 + 0.6389))/(1+exp(-0.3448 + 1.5099 + 0.1249 + 0.6389)) 
 
 
+####Black Baby Boomer Woman
+#1-probability for below-high-school educated black employed woman who didn't vote in 2008
+prob_boomer_ed1 <- (exp(-0.87481 - 0.87481 + 0.22553 -0.76681))/(1+exp(-0.87481 - 0.87481 + 0.22553 -0.7668)) 
+#2-probability for high-school educated black employed woman who didn't vote in 2008
+prob_boomer_ed2 <- (exp(-0.87481 + 0.81340 + 0.22553 -0.76681))/(1+exp(-0.87481 + 0.81340 + 0.22553 -0.76681)) 
+#3-probability for some post-high-school educated black employed woman who didn't vote in 2008
+prob_boomer_ed3 <- (exp(-0.87481 + 1.12412 + 0.22553 -0.76681))/(1+exp(-0.87481 + 1.12412 + 0.22553 -0.76681)) 
+#4-probability for bachelor-educated black employed woman who didn't vote in 2008
+prob_boomer_ed4 <- (exp(-0.87481 + 1.69306 + 0.22553 -0.76681))/(1+exp(-0.87481 + 1.69306 + 0.22553 -0.76681)) 
+#5-probability for graduate-educated black employed woman who didn't vote in 2008
+prob_boomer_ed5 <- (exp(-0.87481 + 1.54687 + 0.22553 -0.76681))/(1+exp(-0.87481 + 1.54687 + 0.22553 -0.76681)) 
 
-
+#creating a dataframe of predicted variables for plotting and other uses
+blackfem_genY_ed <- c(prob_genY_ed1, prob_genY_ed2, prob_genY_ed3, prob_genY_ed4, prob_genY_ed5)
+blackfem_boomer_ed <- c(prob_boomer_ed1, prob_boomer_ed2, prob_boomer_ed3, prob_boomer_ed4, prob_boomer_ed5)
+education <- cbind(blackfem_genY_ed, blackfem_boomer_ed)
 
 
 
