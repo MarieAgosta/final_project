@@ -198,6 +198,16 @@ confint(M_genX)
 exp(cbind(OR = coef(M_genY), confint(M_genY)))
 ```
 
+Code for stargazer table comparing odds-ratios of coefficients across models. 
+Not finished with it yet, though. 
+```{r}
+library(stargazer)
+stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text', 
+          title = c("Millennials", "Generation X", "Baby Boomers", "Silent Generation"))
+
+```
+
+
 Now playing with and plotting predicted probabilities based on the model
 
 ```{r}
