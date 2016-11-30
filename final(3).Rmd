@@ -17,6 +17,7 @@ This is where we clean and prepare the data
 
 library(foreign) 
 library(survey)
+library(rockchalk)
 
 # R will crash if a primary sampling unit (psu) has a single observation
 # so we set R to produce conservative standard errors instead of crashing
@@ -74,7 +75,6 @@ anes$interest_voted2008[anes$interest_voted2008 == 2] <- 0
 anes$female <- anes$gender_respondent_x == "2. Female" #creates dummy gender #variable
 anes$female <- as.numeric(anes$female) 
 
-library(rockchalk)
 #table(anes$inc_incgroup_pre) #income groups
 anes <- anes[!(anes$inc_incgroup_pre == "-9. Refused"),] 
 anes <- anes[!(anes$inc_incgroup_pre == "-8. Don't know"),] 
@@ -87,6 +87,7 @@ anes$inc_incgroup_pre <- combineLevels(anes$inc_incgroup_pre, c("22. $90,000-$99
 anes$inc_incgroup_pre <- combineLevels(anes$inc_incgroup_pre, c("25. $125,000-$149,999", "26. $150,000-$174,999", "27. $175,000-$249,999"), "125-250k")
 levels(anes$inc_incgroup_pre) <- c("Under 20k", "20k-45k", "45k-65k", "65k-90k", "90k-125k", "125-250k", "28. $250,000 or more")
 anes$income <- as.numeric(anes$inc_incgroup_pre)
+
 
 #To simplify our task we create a smaller data set that includes all relevant variables
 #, which are listed below the code. 
@@ -202,8 +203,13 @@ Code for stargazer table comparing odds-ratios of coefficients across models.
 Not finished with it yet, though. 
 ```{r}
 library(stargazer)
-stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text', 
-          title = c("Millennials", "Generation X", "Baby Boomers", "Silent Generation"))
+#stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
+ #         dep.var.labels = "Probability of voting in 2012", 
+  #        column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
+
+stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp,
+          dep.var.labels = "Probability of voting in 2012", 
+          column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
 
 ```
 
@@ -212,9 +218,9 @@ Now playing with and plotting predicted probabilities based on the model
 
 ```{r}
 
-predicted_fit <- function(alpha, beta1, beta2, beta3, beta4, beta5, 
-    x1, x2, x3, x4, x5, 
-    se1, se2, se3, se4, se5)
+predicted_fit <- function(alpha, beta1, beta2, beta3, beta4, beta5, beta6, 
+    x1, x2, x3, x4, x5, x6, 
+    se1, se2, se3, se4, se5, se6)
 {
 lb_fun <- function(coef, se){
     lb <- coef - (1.96 * se)
@@ -228,7 +234,9 @@ ub_fun <- function(coef, se){
 
 fit <- alpha + beta1 * x1 + beta2 * x2 + beta3 * x3 + beta4 * x4 + beta5 * x5
 lb <- alpha + lb_fun(beta1, se1) * x1  + lb_fun(beta2, se2) * x2  + lb_fun(beta3, se3) * x3
+        lb_fun(beta4, se4) * x4 + lb_fun(beta5, se5) * x5 + lb_fun(beta6, se6) * x6
 ub <- alpha + ub_fun(beta1, se1) * x1  + ub_fun(beta2, se2) * x2  + ub_fun(beta3, se3) * x3
+        ub_fun(beta4, se4) * x4 + ub_fun(beta5, se5) *x5 + ub_fun(beta6, se6) *x6
 predictions <- c(lb, fit, ub)
 
 probs <- function(x) {(exp(x)) / (1 + exp(x)) }
@@ -236,37 +244,51 @@ predictions <- probs(predictions)
 return(predictions) 
 }
 
+#let's start by comparing a black Millennial woman and a black Baby Boomer woman
+#across different levels of education. Let's assume she didn't vote in 2008 and
+#her income is moderate (3).
+
+black_genY_ed1 <- predicted_fit(-1.42663, 0.27571, 0.10578, 1.08370, 0.97081, 0.63016, 
+                                0.19622, 1, 1, 0, 1, 0, 3, 0.13361, 0.23487, 0.24849, 
+                                0.39274, 0.35245, 0.07876)
+
+black_genY_ed2 <- predicted_fit(-1.42663, 0.27571, 0.10578, 1.08370, 0.97081, 0.63016, 
+                                0.19622, 2, 1, 0, 1, 0, 3, 0.13361, 0.23487, 0.24849, 
+                                0.39274, 0.35245, 0.07876)
+
+black_genY_ed3 <- predicted_fit(-1.42663, 0.27571, 0.10578, 1.08370, 0.97081, 0.63016, 
+                                0.19622, 3, 1, 0, 1, 0, 3, 0.13361, 0.23487, 0.24849, 
+                                0.39274, 0.35245, 0.07876)
+
+black_genY_ed4 <- predicted_fit(-1.42663, 0.27571, 0.10578, 1.08370, 0.97081, 0.63016, 
+                                0.19622, 4, 1, 0, 1, 0, 3, 0.13361, 0.23487, 0.24849, 
+                                0.39274, 0.35245, 0.07876)
+
+black_genY_ed5 <- predicted_fit(-1.42663, 0.27571, 0.10578, 1.08370, 0.97081, 0.63016, 
+                                0.19622, 5, 1, 0, 1, 0, 3, 0.13361, 0.23487, 0.24849, 
+                                0.39274, 0.35245, 0.07876)
+
+black_boomer_ed1 <- predicted_fit(-1.49411, 0.32012, 0.18731, 2.67234, -0.73006, -0.12489,
+                                  0.17901, 1, 1, 0, 1, 0, 3, 0.12001, 0.25347, 0.25373,
+                                  0.35665, 0.39013, 0.06914)
+
+black_boomer_ed2 <- predicted_fit(-1.49411, 0.32012, 0.18731, 2.67234, -0.73006, -0.12489,
+                                  0.17901, 2, 1, 0, 1, 0, 3, 0.12001, 0.25347, 0.25373,
+                                  0.35665, 0.39013, 0.06914)
+
+black_boomer_ed3 <- predicted_fit(-1.49411, 0.32012, 0.18731, 2.67234, -0.73006, -0.12489,
+                                  0.17901, 3, 1, 0, 1, 0, 3, 0.12001, 0.25347, 0.25373,
+                                  0.35665, 0.39013, 0.06914)
+
+black_boomer_ed4 <- predicted_fit(-1.49411, 0.32012, 0.18731, 2.67234, -0.73006, -0.12489,
+                                  0.17901, 4, 1, 0, 1, 0, 3, 0.12001, 0.25347, 0.25373,
+                                  0.35665, 0.39013, 0.06914)
+
+black_boomer_ed5 <- predicted_fit(-1.49411, 0.32012, 0.18731, 2.67234, -0.73006, -0.12489,
+                                  0.17901, 5, 1, 0, 1, 0, 3, 0.12001, 0.25347, 0.25373,
+                                  0.35665, 0.39013, 0.06914)
 
 
-predicted_fit <- function(alpha, beta1, beta2, beta3, beta4, beta5, 
-    x1, x2, x3, x4, x5, 
-    se1, se2, se3, se4, se5)
-{
-lb_fun <- function(coef, se){
-    lb <- coef - (1.96 * se)
-    return(lb)
-}
-
-ub_fun <- function(coef, se){
-    ub <- coef + (1.96 * se)
-    return(ub)
-}
-
-fit <- alpha + beta1 * x1 + beta2 * x2 + beta3 * x3 + beta4 * x4 + beta5 * x5
-lb <- alpha + lb_fun(beta1, se1) * x1  + lb_fun(beta2, se2) * x2  + lb_fun(beta3, se3) * x3
-        lb_fun(beta4, se4) * x4 + lb_fun(beta5, se5) * x5
-ub <- alpha + ub_fun(beta1, se1) * x1  + ub_fun(beta2, se2) * x2  + ub_fun(beta3, se3) * x3
-        ub_fun(beta4, se4) + ub_fun(beta5, se5)
-predictions <- c(lb, fit, ub)
-
-probs <- function(x) {(exp(x)) / (1 + exp(x)) }
-predictions <- probs(predictions)
-return(predictions) 
-}
-
-predicted_fit(-0.17336, 0.23787, -0.43932, 0.08985, 0.96896, -0.01822, 1, 0, 1, 0, 2, 0.11959, 0.37259, 0.21844, 0.22869, 0.06800)
-
-prediction <- c(0.3756206, 0.5294459, 0.6935776)
 
 # want to have lines for the two generation we are comparing 
 library(ggplot2)
