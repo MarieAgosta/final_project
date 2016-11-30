@@ -170,9 +170,11 @@ Code for stargazer table comparing odds-ratios of coefficients across models.
 Not finished with it yet, though. 
 ```{r}
 library(stargazer)
-stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
-          dep.var.labels = "Probability of voting in 2012", 
-          column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
+#stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
+#          dep.var.labels = "Probability of voting in 2012", 
+#          column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
+#to look at the stargazer, try the one above, which uses "text." The one below only appears
+#when you knit to PDF.
 
 stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp,
           dep.var.labels = "Probability of voting in 2012", 
@@ -187,15 +189,16 @@ library(dplyr)
 library(Zelig)
 
 Z_genY <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, model = "logit.survey", weights=~weights, data = anes_genY)
-setZ_genY <- setx(Z_genY, education = 1:5)
+setZ_genY <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3, female = 1, 
+                  vote_2008 = 0)
 simZ_genY <- sim(Z_genY, x = setZ_genY)
 ci.plot(simZ_genY)
 
 Z_boomer <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, model = "logit.survey", weights=~weights, data = anes_boomer)
-setZ_boomer <- setx(Z_genY, education = 1:5)
+setZ_boomer <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3, female = 1, 
+                  vote_2008 = 0)
 simZ_boomer <- sim(Z_boomer, x = setZ_boomer)
 ci.plot(simZ_boomer)
-
 
 ```
 
@@ -281,8 +284,12 @@ blackfem_ed_genY <- rbind(black_genY_ed1, black_genY_ed2, black_genY_ed3, black_
                    black_genY_ed5)  %>% as.data.frame()
 blackfem_ed_boomer <- rbind(black_boomer_ed1, black_boomer_ed2, black_boomer_ed3,
                    black_boomer_ed4, black_boomer_ed5) %>% as.data.frame()
-colnames(blackfem_ed_genY) <- c("lb", "probability", "ub")
-colnames(blackfem_ed_boomer) <- c("lb", "probability", "ub")
+blackfem_ed_genY$education <- c("Below high school", "High school", "Some post-high", 
+                                "Bachelor", "Graduate")
+blackfem_ed_boomer$education <- c("Below high school", "High school", "Some post-high", 
+                                "Bachelor", "Graduate")
+colnames(blackfem_ed_genY) <- c("lb", "probability", "education")
+colnames(blackfem_ed_boomer) <- c("lb", "probability", "education")
 rownames(blackfem_ed_genY) <- c("Below high school", "High school", "Some post-high", 
                                 "Bachelor", "Graduate")
 rownames(blackfem_ed_boomer) <- c("Below high school", "High school", "Some post-high", 
@@ -300,6 +307,8 @@ ggplot(blackfem_ed_genY, aes(x = factor(1:5), y = probability, group = 1)) +
                                 "Bachelor", "Graduate")) +
   geom_ribbon(data=blackfem_ed_genY,aes(ymin=lb,ymax=ub),alpha=0.3) +
   geom_ribbon(data=blackfem_ed_boomer,aes(ymin=lb,ymax=ub),alpha=0.3) 
+
+
 
 #the code above works. still need to adjust colors and aesthetics. and also to figure out
 #why our confidence bands are so huge. makes things look really imprecise. 
