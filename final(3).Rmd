@@ -123,6 +123,8 @@ ANESdesign_genX <- svydesign(~psu ,  strata = ~strata , data = anes_genX , weigh
 ANESdesign_boomer <- svydesign(~psu ,  strata = ~strata , data = anes_boomer, weights = ~weights, variables = NULL, nest = TRUE)
 
 ANESdesign_silent <- svydesign(~psu ,  strata = ~strata , data = anes_silent, weights = ~weights, variables = NULL, nest = TRUE)
+
+ANESdesign_overall <- svydesign(~psu ,  strata = ~strata , data = anes_small, weights = ~weights, variables = NULL, nest = TRUE)
 ```
 
 Running logistic regression model with confidence intervals
@@ -155,6 +157,15 @@ summary(M_silent)
 silent_coef <- coef(M_silent)
 exp(silent_coef)
 
+#overall data set
+M <- svyglm(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, design = ANESdesign_overall, family = "quasibinomial") 
+summary(M)
+
+
+newdata1 <- with(anes_small, data.frame(education = 1:5, black = 0, hispanic = 0, income = 4, female = 0, vote_2008 = 1))
+
+  
+  
 #Looking at confidence intervals of parameter point estimates 
 
 confint(M_genY)
@@ -207,7 +218,6 @@ setZ_boomer <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3
                   vote_2008 = 0)
 simZ_boomer <- sim(Z_boomer, x = setZ_boomer)
 ci.plot(simZ_boomer)
-
 
 ```
 
@@ -318,26 +328,33 @@ ggplot(blackfem_ed_genY, aes(x = factor(1:5), y = probability, group = 1)) +
   geom_ribbon(data=blackfem_ed_genY,aes(ymin=lb,ymax=ub),alpha=0.1) +
   geom_ribbon(data=blackfem_ed_boomer,aes(ymin=lb,ymax=ub),alpha=0.3) 
 
-
-
 #the code above works. still need to adjust colors and aesthetics. and also to figure out
 #why our confidence bands are so huge. makes things look really imprecise. 
 
 ```
 
 Assessing the model fit. I draw on the UCLA page here for this: 
-http://www.ats.ucla.edu/stat/r/dae/logit.htm 
+http://www.ats.ucla.edu/stat/r/dae/logit.htm.
 
-In short: the results below are good, but I don't really know how to explain them.
+The test below decides whether the model is a better predictor than a model with just 
+an intercept and nothing else (a null model). The survey-weighted one, simply, isn't. It's awful, according to this test. But running our model without the survey weights it's incredible. 
 
 ```{r}
 
 with(M_genY, null.deviance - deviance) #gives chi-square value
-with(M_genY, df.null - df.residual) #gives degrees of freed
-with(M_genY, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) 
-#last command gives p-value, which is very small and tells us "our model as a whole fits #significantly better than an empty model," according to the UCLA page that Christopher
-#used for some of the demonstration in class. But I have no idea what that actually means.
+with(M_genY, df.null - df.residual) #gives degrees of freedom
+with(M_genY, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) #gives p value
 
+with(M_boomer, null.deviance - deviance) #gives chi-square value
+with(M_boomer, df.null - df.residual) #gives degrees of freed
+with(M_boomer, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) 
+
+#trying the model without survey weights
+M_genY2 <- glm(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, data = anes_genY, family = "binomial") 
+
+with(M_genY2, null.deviance - deviance) #gives chi-square value
+with(M_genY2, df.null - df.residual) #gives degrees of freed
+with(M_genY2, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) 
 ````
 
 
