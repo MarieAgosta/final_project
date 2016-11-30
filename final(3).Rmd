@@ -303,20 +303,21 @@ rownames(blackfem_ed_genY) <- c("Below high school", "High school", "Some post-h
 rownames(blackfem_ed_boomer) <- c("Below high school", "High school", "Some post-high", 
                                 "Bachelor", "Graduate")
 
-
-
-
-
 # want to have lines for the two generation we are comparing 
 library(ggplot2)
-ggplot(blackfem_genY, aes(x = education, y = probability, group = 1)) +
-  geom_ribbon(aes(ymin = LL, ymax = UL), alpha = .2) +
-  geom_line(aes(colour = education), size=1)
+#ggplot(blackfem_genY, aes(x = education, y = probability, group = 1)) +
+#  geom_ribbon(aes(ymin = LL, ymax = UL), alpha = .2) +
+#  geom_line(aes(colour = education), size=1)
 
-ggplot(blackfem_ed, aes(x = factor(1:10), y = probability, group = 1)) +
-  geom_ribbon(aes(ymin = lb, ymax = ub), alpha = .2) +
-  geom_line(aes(colour = probability), size=1)
+ggplot(blackfem_ed_genY, aes(x = factor(1:5), y = probability, group = 1)) +
+  geom_line() + geom_line(data = blackfem_ed_boomer, aes(y = probability)) +
+  labs(x = "Education", y = "Probability of voting", title = "Millennial vs Boomer") +    scale_x_discrete(labels = c("Below high school", "High school", "Some post-high", 
+                                "Bachelor", "Graduate")) +
+  geom_ribbon(data=blackfem_ed_genY,aes(ymin=lb,ymax=ub),alpha=0.3) +
+  geom_ribbon(data=blackfem_ed_boomer,aes(ymin=lb,ymax=ub),alpha=0.3) 
 
+#the code above works. still need to adjust colors and aesthetics. and also to figure out
+#why our confidence bands are so huge. makes things look really imprecise. 
 
 ```
 
