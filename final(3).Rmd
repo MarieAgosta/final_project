@@ -246,7 +246,8 @@ return(predictions)
 
 #let's start by comparing a black Millennial woman and a black Baby Boomer woman
 #across different levels of education. Let's assume she didn't vote in 2008 and
-#her income is moderate (3).
+#her income is moderate (3). The lines of code below simply gives us our predicted
+#probabilities, along with confidence intervals.
 
 black_genY_ed1 <- predicted_fit(-1.42663, 0.27571, 0.10578, 1.08370, 0.97081, 0.63016, 
                                 0.19622, 1, 1, 0, 1, 0, 3, 0.13361, 0.23487, 0.24849, 
@@ -288,13 +289,34 @@ black_boomer_ed5 <- predicted_fit(-1.49411, 0.32012, 0.18731, 2.67234, -0.73006,
                                   0.17901, 5, 1, 0, 1, 0, 3, 0.12001, 0.25347, 0.25373,
                                   0.35665, 0.39013, 0.06914)
 
+#now we take those predictions and put them in a dataframe that we can use for 
+#plotting and other functions
+library(dplyr)
+blackfem_ed_genY <- rbind(black_genY_ed1, black_genY_ed2, black_genY_ed3, black_genY_ed4,
+                   black_genY_ed5)  %>% as.data.frame()
+blackfem_ed_boomer <- rbind(black_boomer_ed1, black_boomer_ed2, black_boomer_ed3,
+                   black_boomer_ed4, black_boomer_ed5) %>% as.data.frame()
+colnames(blackfem_ed_genY) <- c("lb", "probability", "ub")
+colnames(blackfem_ed_boomer) <- c("lb", "probability", "ub")
+rownames(blackfem_ed_genY) <- c("Below high school", "High school", "Some post-high", 
+                                "Bachelor", "Graduate")
+rownames(blackfem_ed_boomer) <- c("Below high school", "High school", "Some post-high", 
+                                "Bachelor", "Graduate")
+
+
+
 
 
 # want to have lines for the two generation we are comparing 
 library(ggplot2)
-ggplot(blackfem_genY, aes(x = education, y = prob, group = 1)) +
+ggplot(blackfem_genY, aes(x = education, y = probability, group = 1)) +
   geom_ribbon(aes(ymin = LL, ymax = UL), alpha = .2) +
   geom_line(aes(colour = education), size=1)
+
+ggplot(blackfem_ed, aes(x = factor(1:10), y = probability, group = 1)) +
+  geom_ribbon(aes(ymin = lb, ymax = ub), alpha = .2) +
+  geom_line(aes(colour = probability), size=1)
+
 
 ```
 
