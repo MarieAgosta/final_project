@@ -172,11 +172,12 @@ Code for stargazer table comparing odds-ratios of coefficients across models.
 Not finished with it yet, though. 
 ```{r}
 library(stargazer)
-#stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
-#          dep.var.labels = "Probability of voting in 2012", 
-#          column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
-#to look at the stargazer, try the one above, which uses "text." The one below only appears
+
+#to look at the stargazer, try the one below, which uses "text." The one below only appears
 #when you knit to PDF.
+stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
+          dep.var.labels = "Probability of voting in 2012", 
+          column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
 
 stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp,
           dep.var.labels = "Probability of voting in 2012", 
@@ -201,6 +202,7 @@ setZ_boomer <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3
                   vote_2008 = 0)
 simZ_boomer <- sim(Z_boomer, x = setZ_boomer)
 ci.plot(simZ_boomer)
+
 
 ```
 
@@ -304,10 +306,11 @@ library(ggplot2)
 #  geom_line(aes(colour = education), size=1)
 
 ggplot(blackfem_ed_genY, aes(x = factor(1:5), y = probability, group = 1)) +
-  geom_line() + geom_line(data = blackfem_ed_boomer, aes(y = probability)) +
+  geom_line() + 
+              geom_line(data = blackfem_ed_boomer, aes(y = probability, color = probability)) +
   labs(x = "Education", y = "Probability of voting", title = "Millennial vs Boomer") +    scale_x_discrete(labels = c("Below high school", "High school", "Some post-high", 
                                 "Bachelor", "Graduate")) +
-  geom_ribbon(data=blackfem_ed_genY,aes(ymin=lb,ymax=ub),alpha=0.3) +
+  geom_ribbon(data=blackfem_ed_genY,aes(ymin=lb,ymax=ub),alpha=0.1) +
   geom_ribbon(data=blackfem_ed_boomer,aes(ymin=lb,ymax=ub),alpha=0.3) 
 
 
