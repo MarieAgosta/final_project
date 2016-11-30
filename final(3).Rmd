@@ -94,41 +94,8 @@ anes$income <- as.numeric(anes$inc_incgroup_pre)
 
 anes_small <- data.frame(anes$caseid, anes$dem_age_r_x, anes$dem_edugroup_x, anes$black, anes$hispanic, anes$income, anes$female, anes$interest_voted2008, anes$postvote_rvote, anes$weight_full, anes$psu_full, anes$strata_full)
 
-#		"caseid" ,				      unique record identifiers
-		
-#		"weight.full" , 		    full-sample weights
-		
-#		"strata.full" ,			    full-sample strata variable
-
-#		"psu.full" ,			      full-sample cluster variable
-		
-#		"dem_age_r_x" ,         respondent age group
-		
-# 	"female" ,	            respondent sex
-		
-#		"dem_edugroup_x" ,		  how many hours do you work the average week
-		
-#		"dem_raceeth_x"				  do you support or oppose the tea party   
-
-#   "unemployed"            respondent employment status 
-
-#  interest_voted2008       2008 vote 
-
-#    postvote_rvote         2012 vote 
-
-
 # We named the variables so they are very easy to understand 
 colnames(anes_small) <- c("caseID", "age", "education", "black","hispanic", "income", "female", "vote_2008", "vote_2012", "weights", "psu", "strata" )
-
-
-#other variable ideas to include, all of which have a lot of observations  
-  #table(anes$respons_elections) #efficacy of elections
-  #table(anes$preswin_dutychoice_x) #voting a duty 
-  #table(anes$pid_x) #strength of party ID
-  #table(anes$trust_social) #social trust
-  #table(anes$inc_incgroup_pre) #income groups
-  #http://stackoverflow.com/questions/9604001/grouping-2-levels-of-a-factor-in-r
-  #table(anes$postvote_presstr) #strength of voting preference 
 
 ```
 
@@ -203,9 +170,9 @@ Code for stargazer table comparing odds-ratios of coefficients across models.
 Not finished with it yet, though. 
 ```{r}
 library(stargazer)
-#stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
- #         dep.var.labels = "Probability of voting in 2012", 
-  #        column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
+stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
+          dep.var.labels = "Probability of voting in 2012", 
+          column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
 
 stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp,
           dep.var.labels = "Probability of voting in 2012", 
@@ -213,6 +180,24 @@ stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp,
 
 ```
 
+Attempt at the simulation stuff he's into
+```{r}
+library(MASS)
+library(dplyr)
+library(Zelig)
+
+Z_genY <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, model = "logit.survey", weights=~weights, data = anes_genY)
+setZ_genY <- setx(Z_genY, education = 1:5)
+simZ_genY <- sim(Z_genY, x = setZ_genY)
+ci.plot(simZ_genY)
+
+Z_boomer <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, model = "logit.survey", weights=~weights, data = anes_boomer)
+setZ_boomer <- setx(Z_genY, education = 1:5)
+simZ_boomer <- sim(Z_boomer, x = setZ_boomer)
+ci.plot(simZ_boomer)
+
+
+```
 
 Now playing with and plotting predicted probabilities based on the model
 
@@ -333,6 +318,7 @@ with(M_genY, df.null - df.residual) #gives degrees of freed
 with(M_genY, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) 
 #last command gives p-value, which is very small and tells us "our model as a whole fits #significantly better than an empty model," according to the UCLA page that Christopher
 #used for some of the demonstration in class. But I have no idea what that actually means.
+
 ````
 
 
