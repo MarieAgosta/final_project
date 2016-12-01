@@ -199,7 +199,6 @@ Attempt at the simulation stuff he's into
 library(MASS)
 library(dplyr)
 library(Zelig)
-
 #Steps. 1) run model but using Zelig, which is able to use survey weights
 #2) use "setx" function to set the values for the simulation
 #3) run the simulation using the parameters you specified (sim)
@@ -210,14 +209,16 @@ Z_genY <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + 
 setZ_genY <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3, female = 1, 
                   vote_2008 = 0)
 simZ_genY <- sim(Z_genY, x = setZ_genY)
-ci.plot(simZ_genY)
+ci.plot(simZ_genY, ylim = 0:1, ylab = "Probability of voting")
+#axis(1, at=1:5, labels=c("Below HS", "HS", "Some post-HS", "Bachelors", "Masters"))
 
 #same thing but a black baby boomer
 Z_boomer <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, model = "logit.survey", weights=~weights, data = anes_boomer)
 setZ_boomer <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3, female = 1, 
                   vote_2008 = 0)
 simZ_boomer <- sim(Z_boomer, x = setZ_boomer)
-ci.plot(simZ_boomer)
+ci.plot(simZ_boomer, ylim = 0:1, ylab = "Probability of voting")
+
 
 ```
 
@@ -355,6 +356,14 @@ M_genY2 <- glm(vote_2012 ~ education + female + vote_2008 + black + hispanic + i
 with(M_genY2, null.deviance - deviance) #gives chi-square value
 with(M_genY2, df.null - df.residual) #gives degrees of freed
 with(M_genY2, pchisq(null.deviance - deviance, df.null - df.residual, lower.tail = FALSE)) 
+
+#Hosmer-Lemeshow Goodness of Fit
+install.packages("ResourceSelection")
+library(ResourceSelection)
+hoslem.test(anes_genY$vote_2012, fitted(M_genY))
+
+
+
 ````
 
 
