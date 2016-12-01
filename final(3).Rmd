@@ -210,11 +210,11 @@ Z_genY <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + 
 setZ_genY_black <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3, 
                         female = 1, vote_2008 = 0)
 simZ_genY_black <- sim(Z_genY, x = setZ_genY_black)
-ci.plot(simZ_genY_black, ylim = 0:1, ylab = "Probability of voting", 
-        main = "Black Millennial Woman", legcol = "black", leg = 1,)
+ci.plot(simZ_genY_black, ylim = 0:1, ylab = "Probability of voting", xlab = "Education Level", 
+        main = "Black Millennial Woman", legcol = "black", leg = 1,) 
 
-#With labels 
-ci.plot(simZ_genY_black, ylim = 0:1, ylab = "Probability of voting",axis(side = 1, at = 1:5, tick = TRUE, labels = c("Below HS", "HS", "Some post-HS", "B", "Masters", )
+#With Labels (that don't work... ) 
+ci.plot(simZ_genY_black, ylim = 0:1, ylab = "Probability of voting", xlab = "Education Level", axis(side = 1, at = 1:5, tick = TRUE, labels = c("Below HS", "HS", "Some post-HS", "B", "Masters", )
 
                                                                          
 #same thing but a black baby boomer
@@ -222,11 +222,11 @@ ci.plot(simZ_genY_black, ylim = 0:1, ylab = "Probability of voting",axis(side = 
 Z_boomer <- zelig(vote_2012 ~ education + female + vote_2008 + black + hispanic + income, model = "logit.survey", weights=~weights, strata=~strata, data = anes_boomer)
 setZ_boomer_black <- setx(Z_genY, education = 1:5, black = 1, hispanic = 0, income = 3, female = 1, vote_2008 = 0)
 simZ_boomer_black <- sim(Z_boomer, x = setZ_boomer_black)
-ci.plot(simZ_boomer_black, ylim = 0:1, ylab = "Probability of voting", 
+ci.plot(simZ_boomer_black, ylim = 0:1, ylab = "Probability of voting", xlab = "Education Level",
         main = "Black Baby Boomer Woman", legcol = "black", leg = 1,)
 
-#With Labels 
-ci.plot(simZ_boomer_black, ylim = 0:1, ylab = "Probability of voting",axis(side = 1, at = 1:5, tick = TRUE, 
+#With Labels (that don't work... )
+ci.plot(simZ_boomer_black, ylim = 0:1, ylab = "Probability of voting", xlab = "Education Level", axis(side = 1, at = 1:5, tick = TRUE, 
         labels = c("Below HS", "HS", "Some post-HS", "Bacholer", "Masters", )
 
 #CONCLUSION: plots look really damn similar, which may be expected given that 
@@ -254,7 +254,7 @@ simZ_boomer_white <- sim(Z_boomer, x = setZ_boomer_white)
 ci.plot(simZ_boomer_white, ylim = 0:1, ylab = "Probability of voting",
         main = "White Male Babyboomer with HS Edu", legcol = "black", leg = 1, )
 
-#With labels 
+#With Labels (that don't work... )
 ci.plot(simZ_boomer_white, ylim = 0:1, ylab = "Probability of voting",axis(side = 1, at = 1:7, tick = TRUE, labels = c("20k", "20-40k", "45k-65k", "65k-90k", "90k-125k", "125-250k", "250,000k or more", ) 
 
 #again, plots between Boomers and Millennials look really damn similar
