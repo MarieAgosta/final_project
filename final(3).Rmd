@@ -175,6 +175,17 @@ confint(M_genX)
 #Giving odds ratios with confidence intervals in a table 
 
 exp(cbind(OR = coef(M_genY), confint(M_genY)))
+
+#For presentation... because stargazer doesn't output to presenation 
+
+Millennials <- exp(cbind(OR = coef(M_genY), confint(M_genY)))
+Mill <- data.frame(Millennials)
+colnames(Mill) <- c("Predicted Probabilites", "Lower Bound", "Upper Bound") 
+library(knitr)
+
+kable(Mill)
+kable(Mill, align = 'c', digits = 2, caption = 'Predicted Probabilities for Millennials')
+
 ```
 
 Code for stargazer table comparing odds-ratios of coefficients across models. 
@@ -184,6 +195,7 @@ library(stargazer)
 
 #to look at the stargazer, try the one below, which uses "text." The one below only appears
 #when you knit to PDF.
+
 stargazer(M_genY, M_genX, M_boomer, M_silent, apply.coef = exp, type = 'text',
           dep.var.labels = "Probability of voting in 2012", 
           column.labels = c("Gen Y", "Gen X", "Boomers", "Silent"))
